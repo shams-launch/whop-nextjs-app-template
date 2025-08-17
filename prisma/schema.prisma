@@ -1,0 +1,339 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE MODELS - Multi-tenant architecture
+// ============================================================================
+
+model Tenant {
+  id             String   @id @default(cuid())
+  whopCompanyId  String   @unique
+  name           String
+  branding       Json?    // logo, colors, theme
+  users          User[]
+  courses        Course[]
+  uploads        Upload[]
+  achievements   AchievementDefinition[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("tenants")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  whopUserId    String   @unique
+  email         String   @unique
+  name          String?
+  role          Role     // CREATOR or LEARNER
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  progress      Progress[]
+  attempts      QuizAttempt[]
+  streaks       Streak[]
+  uploads       Upload[] // for creators
+  achievements  AchievementGrant[]
+  leaderboards  LeaderboardEntry[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role { 
+  CREATOR 
+  LEARNER 
+}
+
+// ============================================================================
+// COURSE & CONTENT MODELS
+// ============================================================================
+
+model Course {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  title       String
+  description String?
+  modules     Module[]
+  progress    Progress[]
+  leaderboards LeaderboardEntry[]
+  certificates Certificate[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("courses")
+}
+
+model Module {
+  id           String   @id @default(cuid())
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id])
+  title        String
+  contentType  ContentType // VIDEO, PDF, TEXT
+  contentUrl   String?     // video url, pdf url (optional for TEXT)
+  contentBody  String?     // TEXT content
+  quiz         Quiz?
+  node         PathNode?   // branching config node for adaptive flow
+  funnel       Funnel?     // optional CTA/funnel
+  orderIndex   Int         @default(0)
+  progress     Progress[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("modules")
+}
+
+enum ContentType { 
+  VIDEO 
+  PDF 
+  TEXT 
+}
+
+// ============================================================================
+// QUIZ & ASSESSMENT MODELS
+// ============================================================================
+
+model Quiz {
+  id            String   @id @default(cuid())
+  moduleId      String   @unique
+  module        Module   @relation(fields: [moduleId], references: [id])
+  title         String
+  generatedByAI Boolean  @default(false)
+  questions     Question[]
+  passingScore  Int      @default(70)
+  status        QuizStatus @default(DRAFT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  attempts      QuizAttempt[]
+  aiGenerated   AIGeneratedQuiz?
+
+  @@map("quizzes")
+}
+
+enum QuizStatus { 
+  DRAFT 
+  PUBLISHED 
+  ARCHIVED 
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  type       QType    // MCQ, TF, SHORT, MATCH, FILL
+  text       String
+  options    Json?    // for MCQ/MATCH
+  correct    Json?    // string or structured (e.g., mapping for MATCH)
+  explanation String?
+  orderIndex Int      @default(0)
+
+  @@map("questions")
+}
+
+enum QType { 
+  MCQ 
+  TF 
+  SHORT 
+  MATCH 
+  FILL 
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  answers   Json     // submitted answers
+  score     Int
+  passed    Boolean
+  timeSpent Int?     // seconds
+  createdAt DateTime @default(now())
+
+  @@map("quiz_attempts")
+}
+
+// ============================================================================
+// PROGRESS & TRACKING MODELS
+// ============================================================================
+
+model Progress {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id])
+  moduleId   String
+  module     Module   @relation(fields: [moduleId], references: [id])
+  status     PStatus  @default(IN_PROGRESS) // IN_PROGRESS, COMPLETED, LOCKED
+  lastScore  Int?
+  timeSpent  Int?     // total seconds spent
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  @@map("progress")
+}
+
+enum PStatus { 
+  IN_PROGRESS 
+  COMPLETED 
+  LOCKED 
+}
+
+// ============================================================================
+// UPLOAD & AI GENERATION MODELS
+// ============================================================================
+
+model Upload {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+  creatorId  String
+  creator    User     @relation(fields: [creatorId], references: [id])
+  type       UploadType  // PDF, VIDEO, DOC, TRANSCRIPT
+  url        String      // S3/Supabase storage path
+  status     UploadStatus @default(PENDING)
+  textExtract String?     // extracted text/transcript
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  aiQuizzes  AIGeneratedQuiz[]
+
+  @@map("uploads")
+}
+
+enum UploadType { 
+  PDF 
+  VIDEO 
+  DOC 
+  TRANSCRIPT 
+}
+
+enum UploadStatus { 
+  PENDING 
+  PROCESSED 
+  FAILED 
+}
+
+model AIGeneratedQuiz {
+  id        String   @id @default(cuid())
+  uploadId  String
+  upload    Upload   @relation(fields: [uploadId], references: [id])
+  quizId    String?  @unique
+  quiz      Quiz?    @relation(fields: [quizId], references: [id])
+  rawOutput Json     // OpenAI response for audit
+  createdAt DateTime @default(now())
+
+  @@map("ai_generated_quizzes")
+}
+
+// ============================================================================
+// ADAPTIVE LEARNING & BRANCHING MODELS
+// ============================================================================
+
+model PathNode {
+  id         String   @id @default(cuid())
+  moduleId   String   @unique
+  module     Module   @relation(fields: [moduleId], references: [id])
+  onPassId   String?  // next Module id
+  onFailId   String?  // remedial Module id
+  meta       Json?    // future rules, conditions
+
+  @@map("path_nodes")
+}
+
+model Funnel {
+  id        String   @id @default(cuid())
+  moduleId  String   @unique
+  module    Module   @relation(fields: [moduleId], references: [id])
+  type      FunnelType // CALENDLY, LINK, UPGRADE
+  config    Json       // {url: "...", label: "...", target: "..."}
+  createdAt DateTime @default(now())
+
+  @@map("funnels")
+}
+
+enum FunnelType { 
+  CALENDLY 
+  LINK 
+  UPGRADE 
+}
+
+// ============================================================================
+// GAMIFICATION & ENGAGEMENT MODELS
+// ============================================================================
+
+model Streak {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  count     Int      @default(0)
+  lastDate  DateTime
+  tenantId  String   // for tenant-specific streaks
+
+  @@map("streaks")
+}
+
+model AchievementDefinition {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  code      String   @unique
+  name      String
+  description String?
+  criteria  Json     // rules (e.g., pass >=90% first try)
+  icon      String?  // icon identifier
+  achievements AchievementGrant[]
+  createdAt DateTime @default(now())
+
+  @@map("achievement_definitions")
+}
+
+model AchievementGrant {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  definitionId String
+  definition  AchievementDefinition @relation(fields: [definitionId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("achievement_grants")
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Int      // aggregate (e.g., sum of best quiz scores)
+  rank      Int?
+  updatedAt DateTime @updatedAt
+
+  @@map("leaderboard_entries")
+}
+
+// ============================================================================
+// CERTIFICATION & COMPLETION MODELS
+// ============================================================================
+
+model Certificate {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  url       String   // generated PDF
+  issuedAt  DateTime @default(now())
+  tenantId  String   // for tenant isolation
+
+  @@map("certificates")
+}

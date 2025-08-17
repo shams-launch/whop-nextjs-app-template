@@ -1,111 +1,96 @@
-export default function Page() {
-	return (
-		<div className="min-h-screen bg-gray-a12 py-12 px-4 sm:px-6 lg:px-8">
-			<div className="max-w-3xl mx-auto">
-				<div className="text-center mb-12">
-					<h1 className="text-8 font-bold text-gray-9 mb-4">
-						Welcome to Your Whop App
-					</h1>
-					<p className="text-4 text-gray-6">
-						Follow these steps to get started with your Whop application
-					</p>
-				</div>
+import { getWhopUser } from '@/lib/auth'
+import CreatorDashboard from '@/components/CreatorDashboard'
+import LearnerDashboard from '@/components/LearnerDashboard'
 
-				<div className="space-y-8">
-					<div className="bg-white p-6 rounded-lg shadow-md">
-						<h2 className="text-5 font-semibold text-gray-9 mb-4 flex items-center">
-							<span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent-9 text-white mr-3">
-								1
-							</span>
-							Create your Whop app
-						</h2>
-						<p className="text-gray-6 ml-11">
-							Go to your{" "}
-							<a
-								href="https://whop.com/dashboard"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-accent-9 hover:text-accent-10 underline"
-							>
-								Whop Dashboard
-							</a>{" "}
-							and create a new app in the Developer section.
-						</p>
-					</div>
+export default async function DashboardPage() {
+  try {
+    const whopUser = await getWhopUser()
+    
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Navigation Bar */}
+        <nav className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">MasteryFlow</h1>
+              </div>
+              {whopUser && (
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">
+                        {whopUser.username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {whopUser.username}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </nav>
 
-					<div className="bg-white p-6 rounded-lg shadow-md">
-						<h2 className="text-5 font-semibold text-gray-9 mb-4 flex items-center">
-							<span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent-9 text-white mr-3">
-								2
-							</span>
-							Set up environment variables
-						</h2>
-						<p className="text-gray-6 ml-11 mb-4">
-							Copy the .env file from your dashboard and create a new .env file
-							in your project root. This will contain all the necessary
-							environment variables for your app.
-						</p>
-						{process.env.NODE_ENV === "development" && (
-							<div className="text-gray-6 ml-11">
-								<pre>
-									<code>
-										WHOP_API_KEY={process.env.WHOP_API_KEY?.slice(0, 5)}...
-										<br />
-										NEXT_PUBLIC_WHOP_AGENT_USER_ID=
-										{process.env.NEXT_PUBLIC_WHOP_AGENT_USER_ID}
-										<br />
-										NEXT_PUBLIC_WHOP_APP_ID=
-										{process.env.NEXT_PUBLIC_WHOP_APP_ID}
-										<br />
-										NEXT_PUBLIC_WHOP_COMPANY_ID=
-										{process.env.NEXT_PUBLIC_WHOP_COMPANY_ID}
-									</code>
-								</pre>
-							</div>
-						)}
-					</div>
-
-					<div className="bg-white p-6 rounded-lg shadow-md">
-						<h2 className="text-5 font-semibold text-gray-9 mb-4 flex items-center">
-							<span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent-9 text-white mr-3">
-								3
-							</span>
-							Install your app into your whop
-						</h2>
-						<p className="text-gray-6 ml-11">
-							{process.env.NEXT_PUBLIC_WHOP_APP_ID ? (
-								<a
-									href={`https://whop.com/apps/${process.env.NEXT_PUBLIC_WHOP_APP_ID}/install`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-accent-9 hover:text-accent-10 underline"
-								>
-									Click here to install your app
-								</a>
-							) : (
-								<span className="text-amber-600">
-									Please set your environment variables to see the installation
-									link
-								</span>
-							)}
-						</p>
-					</div>
-				</div>
-
-				<div className="mt-12 text-center text-2 text-gray-5">
-					<p>
-						Need help? Visit the{" "}
-						<a
-							href="https://dev.whop.com"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-accent-9 hover:text-accent-10 underline"
-						>
-							Whop Documentation
-						</a>
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+        {/* Main Content Area */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {whopUser.role === 'CREATOR' ? (
+            <CreatorDashboard />
+          ) : whopUser.role === 'LEARNER' ? (
+            <LearnerDashboard />
+          ) : (
+            <div className="flex items-center justify-center min-h-64">
+              <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  No Role Assigned
+                </h2>
+                <p className="text-gray-600 mb-4">
+                  Your account doesn't have a role assigned yet. Please contact support to get your account configured.
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                  <p className="font-medium">Current User Info:</p>
+                  <p>Username: {whopUser.username}</p>
+                  <p>User ID: {whopUser.id}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    )
+  } catch (error) {
+    // If authentication fails, show auth error
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h1>
+          <p className="text-gray-600 mb-6">
+            {error instanceof Error ? error.message : 'Failed to authenticate with Whop. Please ensure you are logged in and try again.'}
+          </p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800 mb-4">
+            <p className="font-medium">Troubleshooting:</p>
+            <p>• Make sure you're accessing this app through Whop</p>
+            <p>• Check that your Whop session is active</p>
+            <p>• Contact support if the issue persists</p>
+          </div>
+          
+          {/* Development testing link */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+            <p className="font-medium mb-2">Development Testing:</p>
+            <a 
+              href="/test-roles" 
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Set Test User Roles
+            </a>
+            <p className="text-xs mt-1">Use this to test different user roles during development</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }
