@@ -136,7 +136,16 @@ export async function getCurrentUser(): Promise<AuthenticatedUser> {
         })
       }
     }
-    return user as AuthenticatedUser
+    return {
+      ...user,
+      tenant: {
+        ...user.tenant,
+        branding: {
+          name: user.tenant.name,
+          logo: null
+        }
+      }
+    } as AuthenticatedUser
   } catch (error) {
     console.error('Authentication error:', error)
     throw new Error('Whop user token not found. If you are the app developer, ensure you are developing in the whop.com iframe and have the dev proxy enabled.')

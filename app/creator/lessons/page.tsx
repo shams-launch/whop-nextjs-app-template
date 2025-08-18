@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, isCreator } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Container, Heading, Text, Button, Card, Flex, Badge, Table, Dialog, TextField, TextArea, Select } from 'frosted-ui'
+import { Heading, Text, Button, Card, Badge, Table, Dialog, TextArea } from 'frosted-ui'
 import { BookOpen, Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
@@ -32,9 +32,9 @@ export default async function CreatorLessonsPage() {
   })
 
   return (
-    <Container size="4" className="py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <Flex justify="between" align="center">
+        <div className="flex justify-between items-center">
           <div>
             <Heading size="8" className="mb-2">
               Manage Lessons
@@ -49,13 +49,13 @@ export default async function CreatorLessonsPage() {
               Create Lesson
             </Button>
           </Link>
-        </Flex>
+        </div>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <Card className="p-4">
-          <Flex gap="3" align="center">
+          <div className="flex gap-3 items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <BookOpen className="w-5 h-5 text-blue-600" />
             </div>
@@ -63,11 +63,11 @@ export default async function CreatorLessonsPage() {
               <Text size="2" color="gray">Total Lessons</Text>
               <Text size="4" weight="bold">{lessons.length}</Text>
             </div>
-          </Flex>
+          </div>
         </Card>
         
         <Card className="p-4">
-          <Flex gap="3" align="center">
+          <div className="flex gap-3 items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <Eye className="w-5 h-5 text-green-600" />
             </div>
@@ -75,11 +75,11 @@ export default async function CreatorLessonsPage() {
               <Text size="2" color="gray">Published</Text>
               <Text size="4" weight="bold">{lessons.filter(l => l.isPublished).length}</Text>
             </div>
-          </Flex>
+          </div>
         </Card>
         
         <Card className="p-4">
-          <Flex gap="3" align="center">
+          <div className="flex gap-3 items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <EyeOff className="w-5 h-5 text-yellow-600" />
             </div>
@@ -87,11 +87,11 @@ export default async function CreatorLessonsPage() {
               <Text size="2" color="gray">Drafts</Text>
               <Text size="4" weight="bold">{lessons.filter(l => !l.isPublished).length}</Text>
             </div>
-          </Flex>
+          </div>
         </Card>
         
         <Card className="p-4">
-          <Flex gap="3" align="center">
+          <div className="flex gap-3 items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <BookOpen className="w-5 h-5 text-purple-600" />
             </div>
@@ -99,7 +99,7 @@ export default async function CreatorLessonsPage() {
               <Text size="2" color="gray">With Quizzes</Text>
               <Text size="4" weight="bold">{lessons.filter(l => l.quizzes.length > 0).length}</Text>
             </div>
-          </Flex>
+          </div>
         </Card>
       </div>
 
@@ -168,7 +168,7 @@ export default async function CreatorLessonsPage() {
                       </Text>
                     </Table.Cell>
                     <Table.Cell>
-                      <Flex gap="2">
+                      <div className="flex gap-2">
                         <Link href={`/creator/lessons/${lesson.id}`}>
                           <Button size="1" variant="soft">
                             <Edit className="w-3 h-3" />
@@ -182,7 +182,7 @@ export default async function CreatorLessonsPage() {
                         <Button size="1" variant="soft" color="red">
                           <Trash2 className="w-3 h-3" />
                         </Button>
-                      </Flex>
+                      </div>
                     </Table.Cell>
                   </Table.Row>
                 ))}
@@ -191,7 +191,7 @@ export default async function CreatorLessonsPage() {
           </div>
         )}
       </Card>
-    </Container>
+    </div>
   )
 }
 

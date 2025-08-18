@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, isLearner, getUserCreator } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Container, Heading, Text, Button, Card, Flex, Badge, Progress } from 'frosted-ui'
+import { Heading, Text, Button, Card, Badge, Progress } from 'frosted-ui'
 import { BookOpen, Play, CheckCircle, Lock, Trophy, Clock } from 'lucide-react'
 import Link from 'next/link'
 
@@ -20,7 +20,7 @@ export default async function LearnerLessonsPage() {
   const creator = await getUserCreator()
   if (!creator) {
     return (
-      <Container size="4" className="py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <Card className="p-8 text-center">
           <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <Heading size="6" className="mb-2">No Creator Assigned</Heading>
@@ -31,7 +31,7 @@ export default async function LearnerLessonsPage() {
             <Button size="3">Back to Dashboard</Button>
           </Link>
         </Card>
-      </Container>
+      </div>
     )
   }
 
@@ -70,7 +70,7 @@ export default async function LearnerLessonsPage() {
   const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0
 
   return (
-    <Container size="4" className="py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
         <Heading size="8" className="mb-2">
           Your Learning Path
@@ -112,17 +112,17 @@ export default async function LearnerLessonsPage() {
           const isLocked = index > 0 && !lessons[index - 1].progress[0]?.completed
           const hasQuiz = lesson.quizzes.length > 0
           const quizAttempt = lesson.quizzes[0]?.attempts[0]
-          const quizCompleted = quizAttempt?.completed || false
+          const quizCompleted = !!quizAttempt?.completedAt
 
           return (
             <Card key={lesson.id} className={`p-6 ${isLocked ? 'opacity-60' : ''}`}>
               <div className="mb-4">
-                <Flex justify="between" align="center" className="mb-2">
+                <div className="flex justify-between items-center mb-2">
                   <Badge color={isCompleted ? "green" : isLocked ? "gray" : "blue"}>
                     {isCompleted ? "Completed" : isLocked ? "Locked" : "Available"}
                   </Badge>
                   <Text size="2" color="gray">Lesson {lesson.order}</Text>
-                </Flex>
+                </div>
                 
                 <Heading size="4" className="mb-2">{lesson.title}</Heading>
                 {lesson.description && (
@@ -209,7 +209,7 @@ export default async function LearnerLessonsPage() {
           </Link>
         </Card>
       )}
-    </Container>
+    </div>
   )
 }
 

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, isCreator } from '@/lib/auth'
-import { Container, Heading, Text, Button, Card, Flex, TextField, TextArea, Switch, Select } from 'frosted-ui'
+import { Heading, Text, Button, Card, TextArea, Switch } from 'frosted-ui'
 import { ArrowLeft, Save, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
@@ -17,7 +17,7 @@ export default async function NewLessonPage() {
   }
 
   return (
-    <Container size="3" className="py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <Link href="/creator/lessons">
           <Button size="2" variant="soft" className="mb-4">
@@ -45,18 +45,26 @@ export default async function NewLessonPage() {
                   <label htmlFor="title" className="block text-sm font-medium mb-2">
                     Lesson Title *
                   </label>
-                  <TextField.Root name="title" required placeholder="Enter lesson title" />
+                  <input
+                    type="text"
+                    name="title"
+                    required
+                    placeholder="Enter lesson title"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
                 </div>
                 
                 <div>
                   <label htmlFor="order" className="block text-sm font-medium mb-2">
                     Order
                   </label>
-                  <TextField.Root 
-                    name="order" 
-                    type="number" 
-                    placeholder="1" 
+                  <input
+                    type="number"
+                    name="order"
+                    placeholder="1"
                     defaultValue="1"
+                    min="1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -96,9 +104,11 @@ export default async function NewLessonPage() {
                   <label htmlFor="contentLink" className="block text-sm font-medium mb-2">
                     External Content Link (Optional)
                   </label>
-                  <TextField.Root 
-                    name="contentLink" 
+                  <input
+                    type="url"
+                    name="contentLink"
                     placeholder="https://example.com/lesson-content"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <Text size="2" color="gray" className="mt-2">
                     If your content is hosted elsewhere (YouTube, Google Docs, etc.)
@@ -111,10 +121,10 @@ export default async function NewLessonPage() {
             <div>
               <Heading size="5" className="mb-4">AI-Powered Quiz Generation</Heading>
               <Card className="p-4 bg-blue-50 border-blue-200">
-                <Flex gap="3" align="center" className="mb-3">
+                <div className="flex gap-3 items-center mb-3">
                   <Sparkles className="w-5 h-5 text-blue-600" />
                   <Text size="3" weight="medium">Generate Quiz Questions</Text>
-                </Flex>
+                </div>
                 <Text size="2" color="gray" className="mb-4">
                   Let AI automatically create quiz questions based on your lesson content. 
                   This will help reinforce learning and test comprehension.
@@ -132,15 +142,16 @@ export default async function NewLessonPage() {
                     <label htmlFor="numQuestions" className="block text-sm font-medium mb-2">
                       Number of Questions
                     </label>
-                    <Select.Root name="numQuestions" defaultValue="5">
-                      <Select.Trigger />
-                      <Select.Content>
-                        <Select.Item value="3">3 questions</Select.Item>
-                        <Select.Item value="5">5 questions</Select.Item>
-                        <Select.Item value="10">10 questions</Select.Item>
-                        <Select.Item value="15">15 questions</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
+                    <select
+                      name="numQuestions"
+                      defaultValue="5"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="3">3 questions</option>
+                      <option value="5">5 questions</option>
+                      <option value="10">10 questions</option>
+                      <option value="15">15 questions</option>
+                    </select>
                   </div>
                 </div>
               </Card>
@@ -161,7 +172,7 @@ export default async function NewLessonPage() {
             </div>
 
             {/* Actions */}
-            <Flex gap="3" justify="end" className="pt-6 border-t">
+            <div className="flex gap-3 justify-end pt-6 border-t">
               <Link href="/creator/lessons">
                 <Button size="3" variant="soft">
                   Cancel
@@ -171,11 +182,11 @@ export default async function NewLessonPage() {
                 <Save className="w-4 h-4 mr-2" />
                 Create Lesson
               </Button>
-            </Flex>
+            </div>
           </div>
         </form>
       </Card>
-    </Container>
+    </div>
   )
 }
 

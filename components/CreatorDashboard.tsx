@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, Heading, Text, Button, Badge, Table, TextField, TextArea } from 'frosted-ui'
+import { Card, Heading, Text, Button, Badge, Table, TextArea } from 'frosted-ui'
 import { Plus, BookOpen, Users, TrendingUp, Upload, Brain, Settings, FileText, Play } from 'lucide-react'
 
 // ============================================================================
@@ -470,7 +470,11 @@ export default function CreatorDashboard() {
           <div className="space-y-4">
             <div>
               <Text size="2" weight="medium" className="mb-2">Course Title</Text>
-              <TextField placeholder="Enter course title" />
+              <input
+                type="text"
+                placeholder="Enter course title"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
             
             <div>
@@ -501,7 +505,11 @@ export default function CreatorDashboard() {
           <div className="space-y-4">
             <div>
               <Text size="2" weight="medium" className="mb-2">Module Title</Text>
-              <TextField placeholder="Enter module title" />
+              <input
+                type="text"
+                placeholder="Enter module title"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
             
             <div>

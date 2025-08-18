@@ -42,11 +42,11 @@ export const moduleSchema = z.object({
   node: z.object({
     onPassId: z.string().optional(),
     onFailId: z.string().optional(),
-    meta: z.record(z.any()).optional()
+    meta: z.any().optional()
   }).optional(),
   funnel: z.object({
     type: z.enum(['CALENDLY', 'LINK', 'UPGRADE']),
-    config: z.record(z.any())
+    config: z.any()
   }).optional()
 })
 
@@ -65,13 +65,13 @@ export const questionSchema = z.object({
   type: z.enum(['MCQ', 'TF', 'SHORT', 'MATCH', 'FILL']),
   text: z.string().min(1, 'Question text is required'),
   options: z.array(z.string()).optional(), // for MCQ/MATCH
-  correct: z.union([z.string(), z.array(z.string()), z.record(z.string())]).optional(),
+  correct: z.union([z.string(), z.array(z.string()), z.any()]).optional(),
   explanation: z.string().optional(),
   orderIndex: z.number().int().min(0)
 })
 
 export const quizAttemptSchema = z.object({
-  answers: z.record(z.any()), // submitted answers
+  answers: z.any(), // submitted answers
   timeSpent: z.number().int().min(0).optional()
 })
 
@@ -115,7 +115,7 @@ export const achievementSchema = z.object({
   code: z.string().min(1, 'Achievement code is required'),
   name: z.string().min(1, 'Achievement name is required'),
   description: z.string().optional(),
-  criteria: z.record(z.any()),
+  criteria: z.any(),
   icon: z.string().optional()
 })
 
@@ -151,7 +151,7 @@ export const createQuizRequestSchema = z.object({
 
 export const submitQuizRequestSchema = z.object({
   quizId: z.string(),
-  answers: z.record(z.any()),
+  answers: z.any(),
   timeSpent: z.number().int().min(0).optional()
 })
 

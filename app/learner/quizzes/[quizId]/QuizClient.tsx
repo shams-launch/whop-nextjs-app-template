@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Container, Heading, Text, Button, Card, Flex, Progress, Badge, Alert } from 'frosted-ui'
+import { Heading, Text, Button, Card, Progress, Badge } from 'frosted-ui'
 import { ArrowLeft, CheckCircle, XCircle, Trophy, Clock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
@@ -135,18 +135,18 @@ export default function QuizClient({ quizId }: { quizId: string }) {
 
   if (loading) {
     return (
-      <Container size="4" className="py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Card className="p-8 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <Text size="3" color="gray">Loading quiz...</Text>
         </Card>
-      </Container>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Container size="4" className="py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Card className="p-8 text-center">
           <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <Heading size="6" className="mb-2">Error Loading Quiz</Heading>
@@ -155,13 +155,13 @@ export default function QuizClient({ quizId }: { quizId: string }) {
             <Button size="3">Back to Lessons</Button>
           </Link>
         </Card>
-      </Container>
+      </div>
     )
   }
 
   if (!quiz) {
     return (
-      <Container size="4" className="py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <Card className="p-8 text-center">
           <XCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <Heading size="6" className="mb-2">Quiz Not Found</Heading>
@@ -172,7 +172,7 @@ export default function QuizClient({ quizId }: { quizId: string }) {
             <Button size="3">Back to Lessons</Button>
           </Link>
         </Card>
-      </Container>
+      </div>
     )
   }
 
@@ -181,7 +181,7 @@ export default function QuizClient({ quizId }: { quizId: string }) {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1
 
   return (
-    <Container size="4" className="py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <Link href="/learner/lessons">
@@ -268,28 +268,32 @@ export default function QuizClient({ quizId }: { quizId: string }) {
         {isAnswered && (
           <div className="space-y-4">
             {isCorrect ? (
-              <Alert color="green" className="mb-4">
-                <CheckCircle className="w-5 h-5" />
-                <div>
-                  <Text weight="bold">Correct!</Text>
-                  {currentQuestion.explanation && (
-                    <Text size="2" color="gray">{currentQuestion.explanation}</Text>
-                  )}
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                  <div>
+                    <Text weight="bold" color="green">Correct!</Text>
+                    {currentQuestion.explanation && (
+                      <Text size="2" color="gray">{currentQuestion.explanation}</Text>
+                    )}
+                  </div>
                 </div>
-              </Alert>
+              </div>
             ) : (
-              <Alert color="red" className="mb-4">
-                <XCircle className="w-5 h-5" />
-                <div>
-                  <Text weight="bold">Incorrect</Text>
-                  <Text size="2" color="gray">
-                    The correct answer is: {currentQuestion.choices[currentQuestion.correctAnswer]}
-                  </Text>
-                  {currentQuestion.explanation && (
-                    <Text size="2" color="gray">{currentQuestion.explanation}</Text>
-                  )}
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div>
+                    <Text weight="bold" color="red">Incorrect</Text>
+                    <Text size="2" color="gray">
+                      The correct answer is: {currentQuestion.choices[currentQuestion.correctAnswer]}
+                    </Text>
+                    {currentQuestion.explanation && (
+                      <Text size="2" color="gray">{currentQuestion.explanation}</Text>
+                    )}
+                  </div>
                 </div>
-              </Alert>
+              </div>
             )}
 
             {showFeedback && feedback && (
@@ -333,6 +337,6 @@ export default function QuizClient({ quizId }: { quizId: string }) {
           </Link>
         </Card>
       )}
-    </Container>
+    </div>
   )
 }

@@ -112,16 +112,16 @@ async function main() {
 
   console.log('✅ Created course:', course.title)
 
-  // Create demo modules
-  const modules = await Promise.all([
-    prisma.module.upsert({
-      where: { id: 'demo_module_1' },
+  // Create demo lessons
+  const lessons = await Promise.all([
+    prisma.lesson.upsert({
+      where: { id: 'demo_lesson_1' },
       update: {},
       create: {
-        id: 'demo_module_1',
+        id: 'demo_lesson_1',
         title: 'Introduction to Business',
-        contentType: 'TEXT',
-        contentBody: `
+        description: 'Learn the fundamentals of modern business operations',
+        content: `
           <h2>Welcome to Business Fundamentals</h2>
           <p>This course will teach you the essential concepts of modern business operations.</p>
           <h3>What you'll learn:</h3>
@@ -132,18 +132,19 @@ async function main() {
             <li>Marketing and sales fundamentals</li>
           </ul>
         `,
-        orderIndex: 0,
-        courseId: course.id
+        order: 1,
+        isPublished: true,
+        creatorId: creator.id
       }
     }),
-    prisma.module.upsert({
-      where: { id: 'demo_module_2' },
+    prisma.lesson.upsert({
+      where: { id: 'demo_lesson_2' },
       update: {},
       create: {
-        id: 'demo_module_2',
+        id: 'demo_lesson_2',
         title: 'Business Models',
-        contentType: 'TEXT',
-        contentBody: `
+        description: 'Understanding different business models and strategies',
+        content: `
           <h2>Understanding Business Models</h2>
           <p>A business model describes how a company creates, delivers, and captures value.</p>
           <h3>Key Components:</h3>
@@ -154,24 +155,24 @@ async function main() {
             <li>Key Resources</li>
           </ul>
         `,
-        orderIndex: 1,
-        courseId: course.id
+        order: 2,
+        isPublished: true,
+        creatorId: creator.id
       }
     })
   ])
 
-  console.log('✅ Created modules:', modules.map(m => m.title))
+  console.log('✅ Created lessons:', lessons.map(l => l.title))
 
-  // Create demo quiz for first module
+  // Create demo quiz for first lesson
   const quiz = await prisma.quiz.upsert({
     where: { id: 'demo_quiz_1' },
     update: {},
     create: {
       id: 'demo_quiz_1',
       title: 'Business Fundamentals Quiz',
-      passingScore: 70,
-      status: 'PUBLISHED',
-      moduleId: modules[0].id
+      isPublished: true,
+      lessonId: lessons[0].id
     }
   })
 
