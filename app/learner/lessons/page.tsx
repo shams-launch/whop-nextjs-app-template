@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, isLearner, getUserCreator } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { Container, Heading, Text, Button, Card, Flex, Badge, Progress } from '@frosted-ui/react'
+import { Container, Heading, Text, Button, Card, Flex, Badge, Progress } from 'frosted-ui'
 import { BookOpen, Play, CheckCircle, Lock, Trophy, Clock } from 'lucide-react'
 import Link from 'next/link'
 

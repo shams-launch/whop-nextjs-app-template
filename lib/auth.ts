@@ -169,6 +169,32 @@ export async function isLearner(): Promise<boolean> {
   return hasRole('LEARNER')
 }
 
+/**
+ * Get the creator that the current learner is assigned to
+ * This function is only for learners
+ */
+export async function getUserCreator() {
+  try {
+    const user = await getCurrentUser()
+    
+    if (user.role !== 'LEARNER') {
+      return null
+    }
+    
+    // For now, return the first creator in the system
+    // In a real app, you'd have a proper assignment system
+    const creator = await prisma.user.findFirst({
+      where: { role: 'CREATOR' },
+      include: { tenant: true }
+    })
+    
+    return creator
+  } catch (error) {
+    console.error('Error getting user creator:', error)
+    return null
+  }
+}
+
 // ============================================================================
 // CLIENT-SIDE ROLE HELPERS (for server-side use)
 // ============================================================================

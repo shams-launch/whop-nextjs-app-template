@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser, isCreator } from '@/lib/auth'
-import { Container, Heading, Text, Button, Card, Flex, TextField, TextArea, Switch, Select } from '@frosted-ui/react'
+import { Container, Heading, Text, Button, Card, Flex, TextField, TextArea, Switch, Select } from 'frosted-ui'
 import { ArrowLeft, Save, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 

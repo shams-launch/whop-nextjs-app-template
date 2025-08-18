@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getCurrentUser, isLearner } from '@/lib/auth'
+import { getCurrentUser, isLearner, getUserCreator } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
+  const { quizId } = await params
   try {
     const user = await getCurrentUser()
     if (!user) {
@@ -19,7 +20,7 @@ export async function GET(
 
     const quiz = await prisma.quiz.findUnique({
       where: { 
-        id: params.quizId,
+        id: quizId,
         isPublished: true
       },
       include: {
@@ -38,8 +39,9 @@ export async function GET(
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 })
     }
 
-    // Check if user has access to this quiz (through their creator)
-    if (quiz.lesson?.creatorId !== user.creatorId) {
+    // Check if user has access to this quiz (through their assigned creator)
+    const userCreator = await getUserCreator()
+    if (!userCreator || quiz.lesson?.creatorId !== userCreator.id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 

@@ -37,6 +37,7 @@ model User {
   role          Role     // CREATOR or LEARNER
   tenantId      String
   tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  lessons       Lesson[] // for creators
   progress      Progress[]
   attempts      QuizAttempt[]
   streaks       Streak[]
@@ -58,14 +59,30 @@ enum Role {
 // COURSE & CONTENT MODELS
 // ============================================================================
 
+model Lesson {
+  id          String   @id @default(cuid())
+  creatorId   String
+  creator     User     @relation(fields: [creatorId], references: [id])
+  title       String
+  description String?
+  content     String
+  contentLink String?
+  order       Int      @default(1)
+  isPublished Boolean  @default(false)
+  quizzes     Quiz[]
+  progress    Progress[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lessons")
+}
+
 model Course {
   id          String   @id @default(cuid())
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   title       String
   description String?
-  modules     Module[]
-  progress    Progress[]
   leaderboards LeaderboardEntry[]
   certificates Certificate[]
   createdAt   DateTime @default(now())
@@ -74,30 +91,9 @@ model Course {
   @@map("courses")
 }
 
-model Module {
-  id           String   @id @default(cuid())
-  courseId     String
-  course       Course   @relation(fields: [courseId], references: [id])
-  title        String
-  contentType  ContentType // VIDEO, PDF, TEXT
-  contentUrl   String?     // video url, pdf url (optional for TEXT)
-  contentBody  String?     // TEXT content
-  quiz         Quiz?
-  node         PathNode?   // branching config node for adaptive flow
-  funnel       Funnel?     // optional CTA/funnel
-  orderIndex   Int         @default(0)
-  progress     Progress[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
-  @@map("modules")
-}
 
-enum ContentType { 
-  VIDEO 
-  PDF 
-  TEXT 
-}
+
 
 // ============================================================================
 // QUIZ & ASSESSMENT MODELS
@@ -105,47 +101,30 @@ enum ContentType {
 
 model Quiz {
   id            String   @id @default(cuid())
-  moduleId      String   @unique
-  module        Module   @relation(fields: [moduleId], references: [id])
+  lessonId      String
+  lesson        Lesson   @relation(fields: [lessonId], references: [id])
   title         String
-  generatedByAI Boolean  @default(false)
+  description   String?
+  isPublished   Boolean  @default(false)
   questions     Question[]
-  passingScore  Int      @default(70)
-  status        QuizStatus @default(DRAFT)
+  attempts      QuizAttempt[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  attempts      QuizAttempt[]
-  aiGenerated   AIGeneratedQuiz?
 
   @@map("quizzes")
 }
 
-enum QuizStatus { 
-  DRAFT 
-  PUBLISHED 
-  ARCHIVED 
-}
-
 model Question {
-  id         String   @id @default(cuid())
-  quizId     String
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
-  type       QType    // MCQ, TF, SHORT, MATCH, FILL
-  text       String
-  options    Json?    // for MCQ/MATCH
-  correct    Json?    // string or structured (e.g., mapping for MATCH)
-  explanation String?
-  orderIndex Int      @default(0)
+  id             String   @id @default(cuid())
+  quizId         String
+  quiz           Quiz     @relation(fields: [quizId], references: [id])
+  questionText   String
+  choices        String[]
+  correctAnswer  Int
+  explanation    String?
+  order          Int      @default(0)
 
   @@map("questions")
-}
-
-enum QType { 
-  MCQ 
-  TF 
-  SHORT 
-  MATCH 
-  FILL 
 }
 
 model QuizAttempt {
@@ -154,11 +133,9 @@ model QuizAttempt {
   quiz      Quiz     @relation(fields: [quizId], references: [id])
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  answers   Json     // submitted answers
   score     Int
-  passed    Boolean
-  timeSpent Int?     // seconds
-  createdAt DateTime @default(now())
+  totalQuestions Int
+  completedAt DateTime @default(now())
 
   @@map("quiz_attempts")
 }
@@ -171,23 +148,15 @@ model Progress {
   id         String   @id @default(cuid())
   userId     String
   user       User     @relation(fields: [userId], references: [id])
-  courseId   String
-  course     Course   @relation(fields: [courseId], references: [id])
-  moduleId   String
-  module     Module   @relation(fields: [moduleId], references: [id])
-  status     PStatus  @default(IN_PROGRESS) // IN_PROGRESS, COMPLETED, LOCKED
-  lastScore  Int?
+  lessonId   String
+  lesson     Lesson   @relation(fields: [lessonId], references: [id])
+  completed  Boolean  @default(false)
+  score      Int?
   timeSpent  Int?     // total seconds spent
   updatedAt  DateTime @updatedAt
   createdAt  DateTime @default(now())
 
   @@map("progress")
-}
-
-enum PStatus { 
-  IN_PROGRESS 
-  COMPLETED 
-  LOCKED 
 }
 
 // ============================================================================
@@ -206,7 +175,6 @@ model Upload {
   textExtract String?     // extracted text/transcript
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  aiQuizzes  AIGeneratedQuiz[]
 
   @@map("uploads")
 }
@@ -224,49 +192,13 @@ enum UploadStatus {
   FAILED 
 }
 
-model AIGeneratedQuiz {
-  id        String   @id @default(cuid())
-  uploadId  String
-  upload    Upload   @relation(fields: [uploadId], references: [id])
-  quizId    String?  @unique
-  quiz      Quiz?    @relation(fields: [quizId], references: [id])
-  rawOutput Json     // OpenAI response for audit
-  createdAt DateTime @default(now())
 
-  @@map("ai_generated_quizzes")
-}
 
 // ============================================================================
 // ADAPTIVE LEARNING & BRANCHING MODELS
 // ============================================================================
 
-model PathNode {
-  id         String   @id @default(cuid())
-  moduleId   String   @unique
-  module     Module   @relation(fields: [moduleId], references: [id])
-  onPassId   String?  // next Module id
-  onFailId   String?  // remedial Module id
-  meta       Json?    // future rules, conditions
 
-  @@map("path_nodes")
-}
-
-model Funnel {
-  id        String   @id @default(cuid())
-  moduleId  String   @unique
-  module    Module   @relation(fields: [moduleId], references: [id])
-  type      FunnelType // CALENDLY, LINK, UPGRADE
-  config    Json       // {url: "...", label: "...", target: "..."}
-  createdAt DateTime @default(now())
-
-  @@map("funnels")
-}
-
-enum FunnelType { 
-  CALENDLY 
-  LINK 
-  UPGRADE 
-}
 
 // ============================================================================
 // GAMIFICATION & ENGAGEMENT MODELS

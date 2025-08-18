@@ -34,19 +34,17 @@ export async function POST(request: NextRequest) {
         quizId,
         userId: user.id,
         score,
-        completed: true,
+        totalQuestions,
         completedAt: new Date()
       }
     })
 
     // Update lesson progress if this is the first completion
     if (quiz.lessonId) {
-      const existingProgress = await prisma.progress.findUnique({
+      const existingProgress = await prisma.progress.findFirst({
         where: {
-          userId_lessonId: {
-            userId: user.id,
-            lessonId: quiz.lessonId
-          }
+          userId: user.id,
+          lessonId: quiz.lessonId
         }
       })
 
@@ -56,7 +54,6 @@ export async function POST(request: NextRequest) {
             userId: user.id,
             lessonId: quiz.lessonId,
             completed: true,
-            completedAt: new Date(),
             score
           }
         })
@@ -65,9 +62,6 @@ export async function POST(request: NextRequest) {
 
     // Update streak
     await updateUserStreak(user.id)
-
-    // Award badges based on performance
-    await awardBadges(user.id, score, totalQuestions)
 
     return NextResponse.json({ 
       success: true, 
@@ -84,7 +78,7 @@ async function updateUserStreak(userId: string) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const streak = await prisma.streak.findUnique({
+  const streak = await prisma.streak.findFirst({
     where: { userId }
   })
 
@@ -93,13 +87,13 @@ async function updateUserStreak(userId: string) {
     await prisma.streak.create({
       data: {
         userId,
-        currentStreak: 1,
-        longestStreak: 1,
-        lastActivityDate: today
+        count: 1,
+        lastDate: today,
+        tenantId: 'default' // TODO: Get from user's tenant
       }
     })
   } else {
-    const lastActivity = streak.lastActivityDate
+    const lastActivity = streak.lastDate
     if (lastActivity) {
       const lastActivityDate = new Date(lastActivity)
       lastActivityDate.setHours(0, 0, 0, 0)
@@ -108,22 +102,20 @@ async function updateUserStreak(userId: string) {
       
       if (daysDiff === 1) {
         // Consecutive day
-        const newCurrentStreak = streak.currentStreak + 1
         await prisma.streak.update({
-          where: { userId },
+          where: { id: streak.id },
           data: {
-            currentStreak: newCurrentStreak,
-            longestStreak: Math.max(streak.longestStreak, newCurrentStreak),
-            lastActivityDate: today
+            count: streak.count + 1,
+            lastDate: today
           }
         })
       } else if (daysDiff > 1) {
         // Streak broken
         await prisma.streak.update({
-          where: { userId },
+          where: { id: streak.id },
           data: {
-            currentStreak: 1,
-            lastActivityDate: today
+            count: 1,
+            lastDate: today
           }
         })
       }
@@ -132,48 +124,5 @@ async function updateUserStreak(userId: string) {
   }
 }
 
-async function awardBadges(userId: string, score: number, totalQuestions: number) {
-  const percentage = (score / totalQuestions) * 100
 
-  // Perfect score badge
-  if (percentage === 100) {
-    await awardBadgeIfNotExists(userId, 'PERFECT_QUIZ', 'Perfect Score!', 'Achieved 100% on a quiz', '🏆')
-  }
-
-  // Check for streak badges
-  const streak = await prisma.streak.findUnique({
-    where: { userId }
-  })
-
-  if (streak) {
-    if (streak.currentStreak >= 7 && streak.currentStreak < 30) {
-      await awardBadgeIfNotExists(userId, 'STREAK_7_DAYS', 'Week Warrior', 'Maintained a 7-day learning streak', '🔥')
-    }
-    
-    if (streak.currentStreak >= 30) {
-      await awardBadgeIfNotExists(userId, 'STREAK_30_DAYS', 'Monthly Master', 'Maintained a 30-day learning streak', '⭐')
-    }
-  }
-}
-
-async function awardBadgeIfNotExists(userId: string, type: string, name: string, description: string, icon: string) {
-  const existingBadge = await prisma.badge.findFirst({
-    where: {
-      userId,
-      type: type as any
-    }
-  })
-
-  if (!existingBadge) {
-    await prisma.badge.create({
-      data: {
-        userId,
-        type: type as any,
-        name,
-        description,
-        icon
-      }
-    })
-  }
-}
 

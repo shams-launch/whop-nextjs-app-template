@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
         // Create quiz
         const quiz = await prisma.quiz.create({
           data: {
-            creatorId: user.id,
             lessonId: lesson.id,
             title: `${title} Quiz`,
             description: `Quiz for ${title}`,
