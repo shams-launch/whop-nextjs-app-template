@@ -5,6 +5,9 @@ import { Heading, Text, Button, Card, Badge, Table, Dialog, TextArea } from 'fro
 import { BookOpen, Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default async function CreatorLessonsPage() {
   const user = await getCurrentUser()
   

@@ -5,6 +5,9 @@ import { Heading, Text, Button, Card, Badge, Progress } from 'frosted-ui'
 import { TrendingUp, Users, BookOpen, Trophy, MessageCircle, Target } from 'lucide-react'
 import Link from 'next/link'
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default async function CreatorAnalyticsPage() {
   const user = await getCurrentUser()
   
