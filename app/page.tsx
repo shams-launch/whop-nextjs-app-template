@@ -3,7 +3,7 @@ import CreatorDashboard from '@/components/CreatorDashboard'
 import LearnerDashboard from '@/components/LearnerDashboard'
 
 export default async function DashboardPage() {
-  // Force deployment update - user-facing interface for all users
+  // Force deployment update - user-facing interface for all users - v2
   try {
     const whopUser = await getWhopUser()
     
