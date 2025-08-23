@@ -11,9 +11,12 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^6.14.0",
+		"@radix-ui/react-slot": "^1.2.3",
 		"@vercel/functions": "^2.0.3",
 		"@whop/api": "^0.0.29",
 		"@whop/react": "0.2.14",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
 		"frosted-ui": "0.0.1-canary.78",
 		"lucide-react": "^0.539.0",
 		"next": "15.3.2",
@@ -21,6 +24,7 @@
 		"prisma": "^6.14.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
+		"tailwind-merge": "^3.3.1",
 		"tsx": "^4.20.4",
 		"zod": "^4.0.17"
 	},
